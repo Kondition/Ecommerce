@@ -3,18 +3,23 @@ import * as yup from "yup";
 
 export const schemas = {
   register: yup.object().shape({
-    username: yup
+    firstName: yup
       .string()
-      .required("Username is required")
-      .min(2, "Username must be at least 2 characters long"),
+      .required("First name is required")
+      .max(40, "First name must not contain more than 40 characters"),
+    lastName: yup
+      .string()
+      .required("Last Name is required")
+      .max(40, "Last name must not contain more than 40 characters"),
     email: yup.string().email("Email is invalid").required("Email is required"),
     password: yup
       .string()
       .required("Password is required")
-      .min(6, "Password must be at least 6 characters long"),
+      .min(6, "Password must contain at least 6 characters")
+      .max(128, "Password must not contain more than 128 characters"),
   }),
   login: yup.object().shape({
-    usernameOrEmail: yup.string().required("Username or Email is required"),
+    email: yup.string().required("Email is required"),
     password: yup.string().required("Password is required"),
   }),
 };

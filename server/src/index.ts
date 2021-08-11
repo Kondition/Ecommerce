@@ -13,6 +13,7 @@ import { createConnection } from "typeorm";
 import { __prod__, COOKIE_NAME } from "./constants";
 import { User } from "./entities/User";
 import { UserResolver } from "./resolvers/user";
+import { Product } from "./entities/Product";
 
 const main = async () => {
   // Database Connection
@@ -22,7 +23,7 @@ const main = async () => {
     synchronize: !__prod__,
     url: process.env.DATABASE_URL,
     migrations: [path.join(__dirname, "./grations/*")],
-    entities: [User],
+    entities: [User, Product],
   });
 
   // await dbConnection.runMigrations();

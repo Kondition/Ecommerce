@@ -44,13 +44,15 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async register(
-    @Arg("username") username: string,
+    @Arg("firstName") firstName: string,
+    @Arg("lastName") lastName: string,
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const errors = await validate(schemas.register, {
-      username,
+      firstName,
+      lastName,
       email,
       password,
     });
@@ -61,7 +63,8 @@ export class UserResolver {
 
     try {
       const user = await User.create({
-        username,
+        firstName,
+        lastName,
         email,
         password: hashedPassword,
       }).save();
@@ -71,24 +74,9 @@ export class UserResolver {
       return { user };
     } catch (error) {
       if (error.code === "23505") {
-        const errors: FieldError[] = [];
-        if (error.detail.includes("username")) {
-          errors.push({ field: "username", message: "Username is taken" });
-
-          const userWithEmail = await User.findOne({ email });
-          if (userWithEmail) {
-            errors.push({ field: "email", message: "Email is used" });
-          }
-        } else {
-          errors.push({ field: "email", message: "Email is used" });
-
-          const userWithName = await User.findOne({ username });
-          if (userWithName) {
-            errors.push({ field: "username", message: "Username is taken" });
-          }
-        }
-
-        return { errors };
+        return {
+          errors: [{ field: "email", message: "Email is already used" }],
+        };
       }
 
       return { errors: [{ field: "server", message: "Server Error" }] };
@@ -97,28 +85,24 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("email") email: string,
     @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
-    const errors = await validate(schemas.login, { usernameOrEmail, password });
+    const errors = await validate(schemas.login, { email, password });
 
     if (errors) {
       return { errors };
     }
 
-    const user = await User.findOne(
-      usernameOrEmail.includes("@")
-        ? { email: usernameOrEmail }
-        : { username: usernameOrEmail }
-    );
+    const user = await User.findOne({ email });
 
     if (!user) {
       return {
         errors: [
           {
-            field: "usernameOrEmail",
-            message: "User not found",
+            field: "email",
+            message: "User with Email not found",
           },
         ],
       };

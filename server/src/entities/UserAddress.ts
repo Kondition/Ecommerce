@@ -4,43 +4,35 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Field, ObjectType } from "type-graphql";
-import { UserAddress } from "./UserAddress";
-
-enum UserRole {
-  CUSTOMER = "customer",
-  ADMIN = "admin",
-}
+import { User } from "./User";
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export class UserAddress extends BaseEntity {
   @Field()
   @PrimaryGeneratedColumn()
   id!: number;
 
   @Field()
   @Column()
-  firstName!: string;
+  street!: string;
 
   @Field()
   @Column()
-  lastName!: string;
+  city!: string;
 
   @Field()
-  @Column({ unique: true })
-  email!: string;
-
   @Column()
-  password!: string;
+  postalCode!: string;
 
   @Field()
-  @Column({ type: "enum", enum: UserRole, default: UserRole.CUSTOMER })
-  role!: UserRole;
+  @Column()
+  country!: string;
 
   @Field(() => String)
   @CreateDateColumn()
@@ -54,7 +46,6 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field()
-  @OneToMany(() => UserAddress, (userAddress) => userAddress.user)
-  addresses: UserAddress[];
+  @ManyToOne(() => User, (user) => user.addresses)
+  user: User;
 }
