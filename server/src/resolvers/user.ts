@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { schemas, validate } from "../utils/validations";
 import {
   Arg,
   Ctx,
@@ -11,6 +10,8 @@ import {
 } from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
+import { schemas, validate } from "../utils/validations";
+import { COOKIE_NAME } from "../constants";
 
 @ObjectType()
 class FieldError {
@@ -92,5 +93,68 @@ export class UserResolver {
 
       return { errors: [{ field: "server", message: "Server Error" }] };
     }
+  }
+
+  @Mutation(() => UserResponse)
+  async login(
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
+    @Ctx() { req }: MyContext
+  ): Promise<UserResponse> {
+    const errors = await validate(schemas.login, { usernameOrEmail, password });
+
+    if (errors) {
+      return { errors };
+    }
+
+    const user = await User.findOne(
+      usernameOrEmail.includes("@")
+        ? { email: usernameOrEmail }
+        : { username: usernameOrEmail }
+    );
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "usernameOrEmail",
+            message: "User not found",
+          },
+        ],
+      };
+    }
+
+    const valid = await bcrypt.compare(password, user.password);
+
+    if (!valid) {
+      return {
+        errors: [
+          {
+            field: "password",
+            message: "Password is incorrect",
+          },
+        ],
+      };
+    }
+
+    req.session.userId = user.id;
+
+    return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((error) => {
+        res.clearCookie(COOKIE_NAME);
+        if (error) {
+          console.log(error);
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
   }
 }
