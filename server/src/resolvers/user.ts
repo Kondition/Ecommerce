@@ -1,4 +1,5 @@
-// import bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
+import { schemas, validate } from "../utils/validations";
 import {
   Arg,
   Ctx,
@@ -44,6 +45,52 @@ export class UserResolver {
   async register(
     @Arg("username") username: string,
     @Arg("email") email: string,
-    @Arg("password") password: string
-  ) {}
+    @Arg("password") password: string,
+    @Ctx() { req }: MyContext
+  ): Promise<UserResponse> {
+    const errors = await validate(schemas.register, {
+      username,
+      email,
+      password,
+    });
+
+    if (errors) return { errors };
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    try {
+      const user = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+      }).save();
+
+      req.session.userId = user.id;
+
+      return { user };
+    } catch (error) {
+      if (error.code === "23505") {
+        const errors: FieldError[] = [];
+        if (error.detail.includes("username")) {
+          errors.push({ field: "username", message: "Username is taken" });
+
+          const userWithEmail = await User.findOne({ email });
+          if (userWithEmail) {
+            errors.push({ field: "email", message: "Email is used" });
+          }
+        } else {
+          errors.push({ field: "email", message: "Email is used" });
+
+          const userWithName = await User.findOne({ username });
+          if (userWithName) {
+            errors.push({ field: "username", message: "Username is taken" });
+          }
+        }
+
+        return { errors };
+      }
+
+      return { errors: [{ field: "server", message: "Server Error" }] };
+    }
+  }
 }

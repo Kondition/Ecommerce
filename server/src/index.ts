@@ -16,7 +16,7 @@ import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
   // Database Connection
-  const dbConnection = await createConnection({
+  await createConnection({
     type: "postgres",
     logging: true,
     synchronize: !__prod__,
@@ -25,7 +25,7 @@ const main = async () => {
     entities: [User],
   });
 
-  await dbConnection.runMigrations();
+  // await dbConnection.runMigrations();
 
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
