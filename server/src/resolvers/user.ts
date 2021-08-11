@@ -91,9 +91,7 @@ export class UserResolver {
   ): Promise<UserResponse> {
     const errors = await validate(schemas.login, { email, password });
 
-    if (errors) {
-      return { errors };
-    }
+    if (errors) return { errors };
 
     const user = await User.findOne({ email });
 

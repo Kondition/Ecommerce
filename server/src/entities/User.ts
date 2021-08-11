@@ -54,7 +54,6 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @Field()
   @OneToMany(() => UserAddress, (userAddress) => userAddress.user)
   addresses: UserAddress[];
 }

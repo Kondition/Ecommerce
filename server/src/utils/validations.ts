@@ -14,8 +14,8 @@ export const schemas = {
     email: yup.string().email("Email is invalid").required("Email is required"),
     password: yup
       .string()
-      .required("Password is required")
       .min(6, "Password must contain at least 6 characters")
+      .required("Password is required")
       .max(128, "Password must not contain more than 128 characters"),
   }),
   login: yup.object().shape({

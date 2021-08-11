@@ -14,19 +14,23 @@ import { __prod__, COOKIE_NAME } from "./constants";
 import { User } from "./entities/User";
 import { UserResolver } from "./resolvers/user";
 import { Product } from "./entities/Product";
+import { UserAddress } from "./entities/UserAddress";
+import { ProductCategory } from "./entities/ProductCategory";
 
 const main = async () => {
   // Database Connection
-  await createConnection({
+  const dbConnection = await createConnection({
     type: "postgres",
     logging: true,
     synchronize: !__prod__,
     url: process.env.DATABASE_URL,
     migrations: [path.join(__dirname, "./grations/*")],
-    entities: [User, Product],
+    entities: [User, UserAddress, Product, ProductCategory],
   });
 
   // await dbConnection.runMigrations();
+
+  // await User.delete({});
 
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
