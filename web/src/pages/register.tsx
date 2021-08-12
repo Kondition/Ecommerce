@@ -5,10 +5,13 @@ import { InputField } from "../components/InputField";
 import { withApollo } from "../utils/withApollo";
 import { MeDocument, MeQuery, useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
+import { useIsNotAuth } from "../hooks/useIsNotAuth";
 
 const Register = () => {
   const router = useRouter();
   const [register] = useRegisterMutation();
+
+  useIsNotAuth();
 
   return (
     <Formik
