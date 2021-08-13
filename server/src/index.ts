@@ -15,6 +15,8 @@ import { User } from "./entities/User";
 import { UserResolver } from "./resolvers/user";
 import { Product } from "./entities/Product";
 import { UserAddress } from "./entities/UserAddress";
+import { ProductImage } from "./entities/ProductImage";
+import { ProductResolver } from "./resolvers/product";
 import { ProductCategory } from "./entities/ProductCategory";
 
 const main = async () => {
@@ -24,8 +26,8 @@ const main = async () => {
     logging: true,
     synchronize: !__prod__,
     url: process.env.DATABASE_URL,
-    migrations: [path.join(__dirname, "./grations/*")],
-    entities: [User, UserAddress, Product, ProductCategory],
+    migrations: [path.join(__dirname, "./migrations/*")],
+    entities: [User, UserAddress, Product, ProductImage, ProductCategory],
   });
 
   // await dbConnection.runMigrations();
@@ -68,7 +70,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, ProductResolver],
       validate: false,
     }),
     context: ({ req, res }) => ({

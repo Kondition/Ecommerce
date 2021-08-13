@@ -5,11 +5,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { ProductCategory } from "./ProductCategory";
+import { ProductImage } from "./ProductImage";
 
 @ObjectType()
 @Entity()
@@ -30,6 +33,10 @@ export class Product extends BaseEntity {
   @Column()
   price!: number;
 
+  @Field()
+  @Column()
+  quantity!: number;
+
   @Field(() => String)
   @CreateDateColumn()
   createdAt: Date;
@@ -42,6 +49,13 @@ export class Product extends BaseEntity {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
+  @Field(() => [ProductImage])
+  @OneToMany(() => ProductImage, (productImage) => productImage.product, {
+    cascade: true,
+  })
+  images: ProductImage[];
+
   @ManyToMany(() => ProductCategory)
+  @JoinTable()
   categories: ProductCategory[];
 }

@@ -1,9 +1,47 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { useApolloClient } from "@apollo/client";
+import { useLogoutMutation, useMeQuery } from "../generated/graphql";
+import { isServer } from "../utils/isServer";
 
 export const Navbar = () => {
   const router = useRouter();
+  const { data, loading } = useMeQuery({ skip: isServer() });
+  const [logout, { loading: logoutLoading }] = useLogoutMutation();
+
+  const apolloClient = useApolloClient();
+
+  let right;
+  if (data?.me) {
+    right = (
+      <Button
+        bgColor="cyan.200"
+        onClick={async () => {
+          await logout();
+          await apolloClient.resetStore();
+        }}
+        isLoading={logoutLoading}
+      >
+        Log Out
+      </Button>
+    );
+  } else if (!loading) {
+    right = (
+      <>
+        <Button bgColor="cyan.200" onClick={() => router.push("/login")}>
+          Log In
+        </Button>
+        <Button
+          bgColor="cyan.200"
+          ml="1rem"
+          onClick={() => router.push("/register")}
+        >
+          Sign Up
+        </Button>
+      </>
+    );
+  }
 
   return (
     <Flex
@@ -34,18 +72,7 @@ export const Navbar = () => {
         </Flex>
       </Flex>
 
-      <Flex>
-        <Button bgColor="cyan.200" onClick={() => router.push("/login")}>
-          Log In
-        </Button>
-        <Button
-          bgColor="cyan.200"
-          ml="1rem"
-          onClick={() => router.push("/register")}
-        >
-          Sign Up
-        </Button>
-      </Flex>
+      <Flex>{right}</Flex>
     </Flex>
   );
 };

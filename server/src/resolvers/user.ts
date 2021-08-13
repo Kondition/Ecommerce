@@ -14,7 +14,7 @@ import { schemas, validate } from "../utils/validations";
 import { COOKIE_NAME } from "../constants";
 
 @ObjectType()
-class FieldError {
+export class FieldError {
   @Field()
   field: string;
 
