@@ -1,12 +1,29 @@
-query GetProducts {
-  getProducts {
-    id
-    name
-    description
-    price
-    images {
+query GetProducts(
+  $limit: Int!
+  $categories: [Int!]
+  $minPrice: Int
+  $maxPrice: Int
+) {
+  getProducts(
+    limit: $limit
+    categories: $categories
+    minPrice: $minPrice
+    maxPrice: $maxPrice
+  ) {
+    products {
       id
-      imageUrl
+      name
+      price
+      description
+      categories {
+        id
+        name
+      }
+      images {
+        id
+        imageUrl
+      }
     }
+    hasMore
   }
 }

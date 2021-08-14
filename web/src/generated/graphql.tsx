@@ -60,6 +60,16 @@ export type Product = {
   updatedAt: Scalars['String'];
   deletedAt: Scalars['String'];
   images: Array<ProductImage>;
+  categories: Array<ProductCategory>;
+};
+
+export type ProductCategory = {
+  __typename?: 'ProductCategory';
+  id: Scalars['Float'];
+  name: Scalars['String'];
+  createdAt: Scalars['String'];
+  updatedAt: Scalars['String'];
+  deletedAt: Scalars['String'];
 };
 
 export type ProductImage = {
@@ -77,10 +87,26 @@ export type ProductResponse = {
   product?: Maybe<Product>;
 };
 
+export type ProductsResponse = {
+  __typename?: 'ProductsResponse';
+  errors?: Maybe<Array<FieldError>>;
+  products?: Maybe<Array<Product>>;
+  hasMore: Scalars['Boolean'];
+};
+
 export type Query = {
   __typename?: 'Query';
   me?: Maybe<User>;
-  getProducts: Array<Product>;
+  getProducts: ProductsResponse;
+  getProductCategories: Array<ProductCategory>;
+};
+
+
+export type QueryGetProductsArgs = {
+  maxPrice?: Maybe<Scalars['Int']>;
+  minPrice?: Maybe<Scalars['Int']>;
+  categories?: Maybe<Array<Scalars['Int']>>;
+  limit: Scalars['Int'];
 };
 
 export type User = {
@@ -130,10 +156,20 @@ export type RegisterMutationVariables = Exact<{
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: number, firstName: string, lastName: string, email: string }> } };
 
-export type GetProductsQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetProductCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetProductsQuery = { __typename?: 'Query', getProducts: Array<{ __typename?: 'Product', id: number, name: string, description: string, price: number, images: Array<{ __typename?: 'ProductImage', id: number, imageUrl: string }> }> };
+export type GetProductCategoriesQuery = { __typename?: 'Query', getProductCategories: Array<{ __typename?: 'ProductCategory', id: number, name: string }> };
+
+export type GetProductsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  categories?: Maybe<Array<Scalars['Int']> | Scalars['Int']>;
+  minPrice?: Maybe<Scalars['Int']>;
+  maxPrice?: Maybe<Scalars['Int']>;
+}>;
+
+
+export type GetProductsQuery = { __typename?: 'Query', getProducts: { __typename?: 'ProductsResponse', hasMore: boolean, products?: Maybe<Array<{ __typename?: 'Product', id: number, name: string, price: number, description: string, categories: Array<{ __typename?: 'ProductCategory', id: number, name: string }>, images: Array<{ __typename?: 'ProductImage', id: number, imageUrl: string }> }>> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -270,17 +306,64 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
-export const GetProductsDocument = gql`
-    query GetProducts {
-  getProducts {
+export const GetProductCategoriesDocument = gql`
+    query GetProductCategories {
+  getProductCategories {
     id
     name
-    description
-    price
-    images {
+  }
+}
+    `;
+
+/**
+ * __useGetProductCategoriesQuery__
+ *
+ * To run a query within a React component, call `useGetProductCategoriesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetProductCategoriesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetProductCategoriesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetProductCategoriesQuery(baseOptions?: Apollo.QueryHookOptions<GetProductCategoriesQuery, GetProductCategoriesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetProductCategoriesQuery, GetProductCategoriesQueryVariables>(GetProductCategoriesDocument, options);
+      }
+export function useGetProductCategoriesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetProductCategoriesQuery, GetProductCategoriesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetProductCategoriesQuery, GetProductCategoriesQueryVariables>(GetProductCategoriesDocument, options);
+        }
+export type GetProductCategoriesQueryHookResult = ReturnType<typeof useGetProductCategoriesQuery>;
+export type GetProductCategoriesLazyQueryHookResult = ReturnType<typeof useGetProductCategoriesLazyQuery>;
+export type GetProductCategoriesQueryResult = Apollo.QueryResult<GetProductCategoriesQuery, GetProductCategoriesQueryVariables>;
+export const GetProductsDocument = gql`
+    query GetProducts($limit: Int!, $categories: [Int!], $minPrice: Int, $maxPrice: Int) {
+  getProducts(
+    limit: $limit
+    categories: $categories
+    minPrice: $minPrice
+    maxPrice: $maxPrice
+  ) {
+    products {
       id
-      imageUrl
+      name
+      price
+      description
+      categories {
+        id
+        name
+      }
+      images {
+        id
+        imageUrl
+      }
     }
+    hasMore
   }
 }
     `;
@@ -297,10 +380,14 @@ export const GetProductsDocument = gql`
  * @example
  * const { data, loading, error } = useGetProductsQuery({
  *   variables: {
+ *      limit: // value for 'limit'
+ *      categories: // value for 'categories'
+ *      minPrice: // value for 'minPrice'
+ *      maxPrice: // value for 'maxPrice'
  *   },
  * });
  */
-export function useGetProductsQuery(baseOptions?: Apollo.QueryHookOptions<GetProductsQuery, GetProductsQueryVariables>) {
+export function useGetProductsQuery(baseOptions: Apollo.QueryHookOptions<GetProductsQuery, GetProductsQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<GetProductsQuery, GetProductsQueryVariables>(GetProductsDocument, options);
       }

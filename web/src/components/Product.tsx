@@ -1,5 +1,6 @@
-import { Box, Flex, Link, Text } from "@chakra-ui/react";
+import { Box, Flex, Link, Tag, Text } from "@chakra-ui/react";
 import Image from "next/image";
+import { ProductCategory } from "../generated/graphql";
 
 type Product = {
   id: number;
@@ -7,6 +8,7 @@ type Product = {
   description: string;
   price: number;
   image: string;
+  categories: Pick<ProductCategory, "id" | "name">[];
 };
 
 export const Product: React.FC<Product> = ({
@@ -15,6 +17,7 @@ export const Product: React.FC<Product> = ({
   description,
   price,
   image,
+  categories,
 }) => {
   return (
     <Link href={`/product/${id}`}>
@@ -38,8 +41,12 @@ export const Product: React.FC<Product> = ({
           <Text noOfLines={5} flexGrow={1}>
             {description}
           </Text>
-          <Flex justifyContent="flex-end">
-            {" "}
+          <Flex justifyContent="space-between" mt={3}>
+            <Box>
+              {categories.map((category) => (
+                <Tag key={category.id}>{category.name}</Tag>
+              ))}
+            </Box>
             <Text fontWeight="bold">&#8364;{price}</Text>
           </Flex>
         </Flex>

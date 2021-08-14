@@ -55,6 +55,7 @@ export class Product extends BaseEntity {
   })
   images: ProductImage[];
 
+  @Field(() => [ProductCategory])
   @ManyToMany(() => ProductCategory)
   @JoinTable()
   categories: ProductCategory[];
